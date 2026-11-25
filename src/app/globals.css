@@ -1,28 +1,31 @@
 @import "tailwindcss";
+@source "../../src/**/*.{js,ts,jsx,tsx,mdx}";
 
 :root {
-  --background: #f5f7fb;
-  --foreground: #182033;
-  --surface: #ffffff;
-  --surface-foreground: #182033;
-  --muted: #eef2f8;
-  --muted-foreground: #5b6785;
-  --border: #dbe3f0;
-  --primary: #4f6df5;
+  --background: #f4f7ff;
+  --foreground: #121936;
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-solid: #ffffff;
+  --surface-foreground: #121936;
+  --muted: #e9efff;
+  --muted-foreground: #5d6b8f;
+  --border: rgba(148, 163, 199, 0.22);
+  --primary: #5b6cff;
   --primary-foreground: #ffffff;
-  --accent: #7c8cff;
+  --accent: #8b5cf6;
   --accent-foreground: #ffffff;
-  --success: #1f9d72;
-  --warning: #d97706;
-  --danger: #dc4c64;
-  --ring: #4f6df5;
-  --radius: 0.875rem;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --ring: #5b6cff;
+  --glow: rgba(91, 108, 255, 0.18);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
+  --color-surface-solid: var(--surface-solid);
   --color-surface-foreground: var(--surface-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
@@ -40,21 +43,23 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b1220;
-    --foreground: #e8eefc;
-    --surface: #121b2f;
-    --surface-foreground: #e8eefc;
-    --muted: #18243d;
-    --muted-foreground: #9fb0d0;
-    --border: #243452;
-    --primary: #7c93ff;
-    --primary-foreground: #0b1220;
-    --accent: #5e78ff;
-    --accent-foreground: #ffffff;
-    --success: #34c38f;
-    --warning: #f59e0b;
+    --background: #070b18;
+    --foreground: #eef2ff;
+    --surface: rgba(15, 23, 48, 0.62);
+    --surface-solid: #0f1730;
+    --surface-foreground: #eef2ff;
+    --muted: rgba(99, 116, 174, 0.14);
+    --muted-foreground: #9aa9c7;
+    --border: rgba(148, 163, 199, 0.14);
+    --primary: #7c8cff;
+    --primary-foreground: #090f1f;
+    --accent: #a78bfa;
+    --accent-foreground: #090f1f;
+    --success: #34d399;
+    --warning: #fbbf24;
     --danger: #fb7185;
-    --ring: #7c93ff;
+    --ring: #7c8cff;
+    --glow: rgba(124, 140, 255, 0.22);
   }
 }
 
@@ -62,20 +67,26 @@
   border-color: var(--border);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, var(--glow), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 80% 0%, rgba(139, 92, 246, 0.1), transparent 50%);
 }
 
 ::selection {
-  background: color-mix(in oklab, var(--primary) 28%, transparent);
+  background: color-mix(in oklab, var(--primary) 30%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
