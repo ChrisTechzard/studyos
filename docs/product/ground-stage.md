@@ -11,13 +11,19 @@ Establish a clean, buildable foundation for StudyOS before implementing core pro
 - Implemented responsive app shell and primary navigation
 - Created placeholder routes for core product areas: Home, Study, Groups, Search, Calendar, AI, Profile
 - Added initial design tokens reflecting the blueprint direction (calm, academic, navy/indigo)
-- Documented initial architectural decision (ADR 0001)
-- Added basic quality scripts: lint, typecheck, build
+- Documented architectural decisions (ADRs 0001–0003)
+- Added basic quality scripts: lint, typecheck, test, build
+- Delivered the personal study vertical slice: Zod contracts, repository ports, service rules, typed errors, and Vitest unit + flow tests
+- Wired the Home dashboard and Study workspace to the service through server actions
+- Added Supabase Auth sign-in/sign-up/sign-out, proxy-protected routes, and verified session-derived ownership
+- Added Postgres schema, indexes, RLS policies, and an owner-scoped `StudyRepository` adapter
+- Added a least-privilege grants migration (`0002`) that removes Supabase's broad default `anon`/`authenticated` grants
+- Verified the full live flow against Supabase: sign-up/sign-in, profile trigger, task creation, focus session, owner scoping, and dashboard persistence
+- Wired Postgres to the Supabase Session pooler with CA-verified TLS and a separately supplied raw password
 
 ## Explicit Non-Goals (for this stage)
 
-- No real authentication or authorization
-- No persistent database or migrations
+- No profile editing, courses, or academic affiliations beyond email/name
 - No real-time chat/WebSocket infrastructure
 - No AI provider calls or RAG pipeline
 - No file upload/storage pipeline
@@ -26,18 +32,29 @@ Establish a clean, buildable foundation for StudyOS before implementing core pro
 
 ## Recommended Next Slice (vertical slice)
 
-**Target: 0.1/0.2 bridge — Personal Study Foundation**
+**Target: first social loop — groups and membership**
 
-1. **Auth & profile** - managed auth, student profile, protected routes
-2. **Database foundation** - Postgres schema + migrations for users/profiles/tasks/study sessions
-3. **Personal dashboard** - real "today" tasks/study blocks, create/complete task flow
-4. **Study session** - start/end focus session, record duration, basic progress stats
-5. **Observability baseline** - error tracking, structured logging for critical paths
+The personal study loop is authenticated and durable. The next slice should reuse the same domain-first pattern:
+
+1. **Groups domain** - schemas, owner/role rules, and a `GroupRepository` port
+2. **Create/join flow** - group identity (name, handle, course, level), membership, and invite codes
+3. **Group surface** - replace the Groups placeholder with a real list/detail view
+4. **Integration tests** - service + Postgres for task/session/group workflows, then E2E for sign-up → task → focus session
+5. **Observability baseline** - error tracking and structured logging for critical paths
 
 ## Exit Criteria for Ground Stage
 
-- App runs locally and builds cleanly
-- Lint and typecheck pass
-- Core routes/navigation are reachable
+- App runs locally and builds cleanly (with or without Supabase env; protected routes redirect to sign-in)
+- Lint, typecheck, and unit tests pass in CI
+- Core routes/navigation are reachable, private routes require a verified session
+- Study rules are covered by deterministic tests and isolated from presentation
+- Migration applies cleanly and repository SQL is owner-scoped and tested
 - Architecture and next steps are documented
-- Repo is ready for review before first push of scaffold
+
+## Verification Status (2026-11-26)
+
+- Applied `0001_initial.sql` and `0002_least_privilege_grants.sql`; schema checks passed for tables, RLS, policies, indexes, grants, trigger, function, and extension.
+- Verified live Supabase sign-up/sign-in, profile trigger, own-profile RLS read, task creation, focus session start/end, owner-scoping rejection, task completion, and dashboard stats.
+- Verified authenticated HTTP routes: `/` and `/study` returned 200 for a live session, `/login` redirected to `/`, and the live task rendered on the dashboard.
+- `npm run typecheck`, `npm run lint`, `npm test -- --run` (21/21), and a clean production build passed.
+- Browser UI click-through was not performed; verification used authenticated HTTP requests plus live service/database tests.

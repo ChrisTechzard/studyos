@@ -4,7 +4,7 @@
 
 StudyOS is a student-centered platform that brings personal study, study groups, planning, collaboration, knowledge search, and AI-assisted learning into one calm academic home.
 
-This repository is in the **ground stage**: foundation scaffold, architecture decisions, and initial product shell based on `STUDYOS_Master_Blueprint.pptx`.
+This repository is in the **ground stage**: foundation scaffold, architecture decisions, authenticated personal-study vertical slice, and initial product shell based on `STUDYOS_Master_Blueprint.pptx`.
 
 ## Ground Stage (current)
 
@@ -13,14 +13,15 @@ What is included now:
 - **Next.js + TypeScript + Tailwind CSS** app scaffold (App Router, `src/` structure)
 - **StudyOS design foundation**: calm academic theme, responsive app shell, navigation
 - **Initial route map**: Home, Study, Groups, Search, Calendar, AI, Profile
-- **Dashboard shell**: blueprint-aligned home surface with placeholder/mock data
-- **Architecture docs**: initial ADRs and ground-stage plan
+- **Personal study slice**: validated task and focus-session domain, server actions, and a data-driven dashboard/study workspace
+- **Runtime contracts & tests**: Zod schemas, injected repository/clock/id ports, and Vitest unit + flow tests
+- **Identity & persistence**: Supabase Auth (cookie sessions, protected routes) and an owner-scoped Postgres repository with migrations, RLS, verified TLS, and least-privilege grants
+- **Architecture docs**: ADRs and ground-stage plan
 - **Public repo baseline**: MIT license, env example, lint/typecheck scripts
 
 What is intentionally **not** implemented yet:
 
-- Authentication and user accounts
-- Database/schema migrations
+- Profile editing, courses, and academic affiliations beyond email/name
 - Real group/chat/realtime features
 - AI/RAG integrations
 - File uploads/object storage
@@ -34,23 +35,31 @@ What is intentionally **not** implemented yet:
 | Framework | Next.js (App Router) + React + TypeScript | Fast product iteration, strong typing, single full-stack web app |
 | Styling | Tailwind CSS v4 | Rapid, consistent UI implementation with tokenized theme |
 | Icons | Lucide React | Clean, accessible SVG icon set |
+| Validation | Zod | Runtime validation of commands, entities, environment, and service output |
+| Auth | Supabase Auth + `@supabase/ssr` | Managed identity with verified cookie sessions |
+| Data | PostgreSQL via `pg` | System of record with parameterized, owner-scoped SQL and RLS |
+| Testing | Vitest | Fast unit and flow tests for domain rules and repository adapter |
 | Quality | ESLint + TypeScript typecheck | Baseline code quality and safety |
 | Architecture | Modular monolith (single app) | Simple now; clear domain boundaries for future extraction |
 
-Planned next integrations (per blueprint): PostgreSQL (+ pgvector), managed auth/realtime, object storage (R2/S3-compatible), AI provider abstraction/RAG, LiveKit for live rooms.
+Planned next integrations (per blueprint): managed realtime, object storage (R2/S3-compatible), pgvector + AI provider abstraction/RAG, and LiveKit for live rooms.
 
 ## Project Structure
 
 ```text
 .
+├── certs/                     # Supabase root CA for verified Postgres TLS
+├── database/migrations/       # Postgres schema, indexes, RLS policies, grants
 ├── docs/
 │   ├── architecture/adr/      # Architecture Decision Records
 │   └── product/               # Product/ground-stage planning docs
 ├── src/
-│   ├── app/                   # Next.js App Router routes
-│   ├── components/            # UI and layout components
-│   ├── lib/                   # Shared utilities
-│   └── modules/               # Domain module boundaries (future implementation)
+│   ├── app/(app)/             # Authenticated routes inside the app shell
+│   ├── app/login/             # Public sign-in / sign-up
+│   ├── components/            # UI, layout, dashboard, study, and auth components
+│   ├── lib/                   # Env validation, auth/session, Supabase client, utilities
+│   ├── proxy.ts               # Session refresh + route protection
+│   └── modules/               # Domain modules (study implemented, others planned)
 ├── STUDYOS_Master_Blueprint.pptx
 ├── .env.example
 └── README.md
@@ -70,6 +79,20 @@ npm install
 npm run dev
 ```
 
+Copy `.env.example` to `.env.local` and add:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+DATABASE_URL=...        # Supabase Session pooler URL (IPv4); [YOUR-PASSWORD] may remain
+DATABASE_PASSWORD=...   # Raw database password; do not URL-encode it here
+DATABASE_SSL=require
+```
+
+Download the Supabase root CA from **Database → Settings → SSL Configuration** and save it as `certs/prod-ca-2021.crt`. Then apply `database/migrations/0001_initial.sql` and `database/migrations/0002_least_privilege_grants.sql`.
+
+Use the **Session pooler** connection string, not the direct connection, on IPv4-only networks. The sign-in page renders setup instructions until the Supabase values exist.
+
 Open [http://localhost:3000](http://localhost:3000).
 
 ### Quality checks
@@ -77,6 +100,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ```bash
 npm run lint
 npm run typecheck
+npm test
 npm run build
 ```
 
@@ -84,13 +108,15 @@ npm run build
 
 - [Ground Stage Plan](./docs/product/ground-stage.md)
 - [ADR 0001 - Initial Foundation](./docs/architecture/adr/0001-initial-foundation.md)
+- [ADR 0002 - Personal Study Domain Slice](./docs/architecture/adr/0002-personal-study-domain-slice.md)
+- [ADR 0003 - Auth and Postgres Adapter](./docs/architecture/adr/0003-auth-and-postgres-adapter.md)
 - [Master Blueprint](./STUDYOS_Master_Blueprint.pptx)
 
 ## Roadmap Direction
 
 The blueprint defines a phased release path:
 
-1. **0.1 Foundation** - auth, profile, DB, design system *(current ground stage starts here)*
+1. **0.1 Foundation** - auth, profile, DB, design system *(sign-in, protected routes, and study schema implemented)*
 2. **0.2 Personal** - dashboard, tasks, timetable
 3. **0.3 Groups** - create/join, roles, discussions
 4. **0.4 Realtime** - chat + notifications

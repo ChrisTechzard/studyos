@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Menu, Search, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +16,11 @@ const mobileNav = [
   { href: "/profile", label: "Profile" },
 ] as const;
 
-export function Topbar() {
+type TopbarProps = {
+  readonly userInitial: string;
+};
+
+export function Topbar({ userInitial }: TopbarProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -44,17 +48,13 @@ export function Topbar() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface/50 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label="Notifications"
+          <Link
+            href="/profile"
+            aria-label="Open profile"
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-sm font-bold text-white shadow-md shadow-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
-          </button>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-sm font-bold text-white shadow-md shadow-primary/20">
-            C
-          </div>
+            {userInitial}
+          </Link>
         </div>
       </div>
 
