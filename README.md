@@ -14,6 +14,7 @@ What is included now:
 - **StudyOS design foundation**: calm academic theme, responsive app shell, navigation
 - **Initial route map**: Home, Study, Groups, Search, Calendar, AI, Profile
 - **Personal study slice**: validated task and focus-session domain, server actions, and a data-driven dashboard/study workspace
+- **First social loop**: authenticated groups, owner/member roles, invite codes, membership-aware queries, and real Groups pages
 - **Runtime contracts & tests**: Zod schemas, injected repository/clock/id ports, and Vitest unit + flow tests
 - **Identity & persistence**: Supabase Auth (cookie sessions, protected routes) and an owner-scoped Postgres repository with migrations, RLS, verified TLS, and least-privilege grants
 - **Architecture docs**: ADRs and ground-stage plan
@@ -49,7 +50,7 @@ Planned next integrations (per blueprint): managed realtime, object storage (R2/
 ```text
 .
 ├── certs/                     # Supabase root CA for verified Postgres TLS
-├── database/migrations/       # Postgres schema, indexes, RLS policies, grants
+├── database/migrations/       # Postgres schema, indexes, RLS policies, grants (study + groups)
 ├── docs/
 │   ├── architecture/adr/      # Architecture Decision Records
 │   └── product/               # Product/ground-stage planning docs
@@ -59,7 +60,7 @@ Planned next integrations (per blueprint): managed realtime, object storage (R2/
 │   ├── components/            # UI, layout, dashboard, study, and auth components
 │   ├── lib/                   # Env validation, auth/session, Supabase client, utilities
 │   ├── proxy.ts               # Session refresh + route protection
-│   └── modules/               # Domain modules (study implemented, others planned)
+│   └── modules/               # Domain modules (study + groups implemented)
 ├── STUDYOS_Master_Blueprint.pptx
 ├── .env.example
 └── README.md
@@ -89,7 +90,7 @@ DATABASE_PASSWORD=...   # Raw database password; do not URL-encode it here
 DATABASE_SSL=require
 ```
 
-Download the Supabase root CA from **Database → Settings → SSL Configuration** and save it as `certs/prod-ca-2021.crt`. Then apply `database/migrations/0001_initial.sql` and `database/migrations/0002_least_privilege_grants.sql`.
+Download the Supabase root CA from **Database → Settings → SSL Configuration** and save it as `certs/prod-ca-2021.crt`. Then apply `database/migrations/0001_initial.sql`, `database/migrations/0002_least_privilege_grants.sql`, and `database/migrations/0003_groups.sql`.
 
 Use the **Session pooler** connection string, not the direct connection, on IPv4-only networks. The sign-in page renders setup instructions until the Supabase values exist.
 
@@ -110,6 +111,7 @@ npm run build
 - [ADR 0001 - Initial Foundation](./docs/architecture/adr/0001-initial-foundation.md)
 - [ADR 0002 - Personal Study Domain Slice](./docs/architecture/adr/0002-personal-study-domain-slice.md)
 - [ADR 0003 - Auth and Postgres Adapter](./docs/architecture/adr/0003-auth-and-postgres-adapter.md)
+- [ADR 0004 - Groups and Membership](./docs/architecture/adr/0004-groups-and-membership.md)
 - [Master Blueprint](./STUDYOS_Master_Blueprint.pptx)
 
 ## Roadmap Direction
@@ -118,7 +120,7 @@ The blueprint defines a phased release path:
 
 1. **0.1 Foundation** - auth, profile, DB, design system *(sign-in, protected routes, and study schema implemented)*
 2. **0.2 Personal** - dashboard, tasks, timetable
-3. **0.3 Groups** - create/join, roles, discussions
+3. **0.3 Groups** - create/join, roles, discussions *(create/join and roles implemented; discussions planned)*
 4. **0.4 Realtime** - chat + notifications
 5. **0.5 AI** - tutor + basic planner
 6. **0.6 Knowledge** - upload + RAG + citations

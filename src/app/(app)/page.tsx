@@ -4,13 +4,17 @@ import { GroupsPreview } from "@/components/dashboard/groups-preview";
 import { ProgressPanel } from "@/components/dashboard/progress-panel";
 import { TodaysPlan } from "@/components/dashboard/todays-plan";
 import { getAuthenticatedOwnerId } from "@/lib/auth/session";
+import { getGroupService } from "@/modules/groups/server/instance";
 import { getStudyService } from "@/modules/study/server/instance";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage(): Promise<React.ReactNode> {
   const ownerId = await getAuthenticatedOwnerId();
-  const dashboard = await getStudyService().getDashboard(ownerId);
+  const [dashboard, groups] = await Promise.all([
+    getStudyService().getDashboard(ownerId),
+    getGroupService().listGroups(ownerId),
+  ]);
   const pendingCount = Math.max(
     0,
     dashboard.stats.tasksDueToday - dashboard.stats.tasksCompletedToday,
@@ -26,7 +30,7 @@ export default async function HomePage(): Promise<React.ReactNode> {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <GroupsPreview />
+        <GroupsPreview groups={groups} />
         <ProgressPanel stats={dashboard.stats} />
         <ComingUp tasks={dashboard.todayTasks} />
       </div>

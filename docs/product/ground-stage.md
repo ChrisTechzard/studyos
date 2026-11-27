@@ -20,6 +20,9 @@ Establish a clean, buildable foundation for StudyOS before implementing core pro
 - Added a least-privilege grants migration (`0002`) that removes Supabase's broad default `anon`/`authenticated` grants
 - Verified the full live flow against Supabase: sign-up/sign-in, profile trigger, task creation, focus session, owner scoping, and dashboard persistence
 - Wired Postgres to the Supabase Session pooler with CA-verified TLS and a separately supplied raw password
+- Delivered the first social loop: groups, owner/member roles, invite-code creation/rotation, membership-aware queries, and a real Groups surface
+- Added `0003_groups.sql` with RLS policies, a recursion-safe membership helper, and least-privilege grants
+- Extracted shared `Clock`/`IdGenerator`, `QueryExecutor`, and one verified pooler pool for reuse across modules
 
 ## Explicit Non-Goals (for this stage)
 
@@ -32,15 +35,14 @@ Establish a clean, buildable foundation for StudyOS before implementing core pro
 
 ## Recommended Next Slice (vertical slice)
 
-**Target: first social loop — groups and membership**
+**Target: verification and observability baseline**
 
-The personal study loop is authenticated and durable. The next slice should reuse the same domain-first pattern:
+The personal and social loops are both authenticated and durable. The next slice should harden them before adding more group depth:
 
-1. **Groups domain** - schemas, owner/role rules, and a `GroupRepository` port
-2. **Create/join flow** - group identity (name, handle, course, level), membership, and invite codes
-3. **Group surface** - replace the Groups placeholder with a real list/detail view
-4. **Integration tests** - service + Postgres for task/session/group workflows, then E2E for sign-up → task → focus session
-5. **Observability baseline** - error tracking and structured logging for critical paths
+1. **Browser E2E** - Playwright journey for sign-up → task → focus session → group create → join with invite code
+2. **Gated integration tests** - run the same service flows against Postgres in CI when credentials are available
+3. **Observability baseline** - provider-agnostic structured logging for auth, server actions, and typed service failures
+4. **Group depth** - then add discussions, shared resources, and role/moderation rules as a new domain slice
 
 ## Exit Criteria for Ground Stage
 
@@ -58,3 +60,11 @@ The personal study loop is authenticated and durable. The next slice should reus
 - Verified authenticated HTTP routes: `/` and `/study` returned 200 for a live session, `/login` redirected to `/`, and the live task rendered on the dashboard.
 - `npm run typecheck`, `npm run lint`, `npm test -- --run` (21/21), and a clean production build passed.
 - Browser UI click-through was not performed; verification used authenticated HTTP requests plus live service/database tests.
+
+## Verification Status (2026-11-27)
+
+- Applied `0003_groups.sql`; schema checks passed for tables, RLS, policies, indexes, constraints, grants, and the recursion-safe membership helper.
+- Verified live group flow with three Supabase users: create, non-member denial, join, member listing, owner-only invite rotation, old-code invalidation, and member counts.
+- Verified Supabase REST RLS: members read their groups, non-members see none, and `anon` receives no group or membership rows.
+- Verified authenticated HTTP routes: `/groups` and a group detail page returned 200, `/groups` redirected unauthenticated requests to `/login`, `/login` redirected authenticated requests to `/`, and live groups rendered in the list and dashboard preview.
+- `npm run typecheck`, `npm run lint`, `npm test -- --run` (35/35), and the production build passed.

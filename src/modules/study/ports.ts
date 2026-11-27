@@ -1,3 +1,4 @@
+import type { Clock, IdGenerator } from "@/lib/ports";
 import type {
   SessionId,
   StudySession,
@@ -5,6 +6,8 @@ import type {
   TaskId,
   UserId,
 } from "@/modules/study/domain";
+
+export type { Clock, IdGenerator } from "@/lib/ports";
 
 export interface StudyRepository {
   listTasks(ownerId: UserId): Promise<readonly Task[]>;
@@ -14,14 +17,6 @@ export interface StudyRepository {
   findSession(ownerId: UserId, sessionId: SessionId): Promise<StudySession | null>;
   findActiveSession(ownerId: UserId): Promise<StudySession | null>;
   saveSession(session: StudySession): Promise<void>;
-}
-
-export interface Clock {
-  now(): Date;
-}
-
-export interface IdGenerator {
-  next(): string;
 }
 
 export interface StudyServiceDependencies {

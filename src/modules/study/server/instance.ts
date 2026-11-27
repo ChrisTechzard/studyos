@@ -1,13 +1,11 @@
 import { randomUUID } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { Pool, type QueryResultRow as PgRow } from "pg";
-import { getServerEnv, type ServerEnv } from "@/lib/env";
+import { createDatabasePool } from "@/lib/database/pool";
 import {
   createPgQueryExecutor,
   createPostgresStudyRepository,
 } from "@/modules/study/postgres-repository";
 import { StudyService } from "@/modules/study/service";
+import type { QueryResultRow as PgRow } from "pg";
 
 /**
  * One pooled connection per process; the repository itself is stateless and
@@ -19,12 +17,7 @@ const globalForStudy = globalThis as typeof globalThis & {
 
 export function getStudyService(): StudyService {
   if (globalForStudy.__studyOsService === undefined) {
-    const env = getServerEnv();
-    const pool = new Pool({
-      connectionString: createConnectionString(env),
-      max: 5,
-      ssl: createPostgresSslOptions(env),
-    });
+    const pool = createDatabasePool();
 
     const executor = createPgQueryExecutor(
       <TRow extends PgRow>(sql: string, params: readonly unknown[]): Promise<readonly TRow[]> =>
@@ -39,28 +32,4 @@ export function getStudyService(): StudyService {
   }
 
   return globalForStudy.__studyOsService;
-}
-
-function createConnectionString(env: ServerEnv): string {
-  const url = new URL(env.DATABASE_URL);
-  url.password = encodeURIComponent(env.DATABASE_PASSWORD);
-  return url.toString();
-}
-
-function createPostgresSslOptions(
-  env: ServerEnv,
-): false | { readonly ca: Buffer; readonly rejectUnauthorized: true } {
-  if (env.DATABASE_SSL !== "require") {
-    return false;
-  }
-
-  const caPath = env.DATABASE_CA_PATH ?? join(process.cwd(), "certs", "prod-ca-2021.crt");
-
-  try {
-    return { ca: readFileSync(/* turbopackIgnore: true */ caPath), rejectUnauthorized: true };
-  } catch {
-    throw new Error(
-      `Supabase CA certificate not found at ${caPath}. Download prod-ca-2021.crt from Supabase Database Settings and save it there.`,
-    );
-  }
 }

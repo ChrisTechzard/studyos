@@ -1,4 +1,8 @@
 import { z } from "zod";
+import type {
+  QueryExecutor,
+  QueryResultRow,
+} from "@/lib/database/query-executor";
 import {
   IsoDateTimeSchema,
   SessionIdSchema,
@@ -16,14 +20,7 @@ import {
 import { StudyPersistenceError } from "@/modules/study/errors";
 import type { StudyRepository } from "@/modules/study/ports";
 
-export interface QueryResultRow {
-  readonly [column: string]: unknown;
-}
-
-export type QueryExecutor = (
-  sql: string,
-  params: readonly unknown[],
-) => Promise<readonly QueryResultRow[]>;
+export type { QueryExecutor, QueryResultRow } from "@/lib/database/query-executor";
 
 const TASK_COLUMNS = "id, owner_id, title, notes, course_label, due_at, created_at, completed_at";
 const SESSION_COLUMNS = "id, owner_id, task_id, title, started_at, ended_at";
